@@ -1,143 +1,134 @@
-class NodoArbol:
-    def __init__(self, dato):
-        self.dato = dato
-        self.izquierda = None
-        self.derecha = None
+import random
 
-class ArbolBinario: 
-    def __init__(self):
-        self.raiz = None
+class Elemento:
+    def __init__(self, valor):
+        self.valor = valor
+        self.hijo_izq = None
+        self.hijo_der = None
 
-    def insertar(self, dato):
-        def _insertar_recursivo(nodo, nuevo_dato):
-            if nuevo_dato < nodo.dato:
-                if nodo.izquierda is None:
-                    nodo.izquierda = NodoArbol(nuevo_dato)
+class EstructuraArborea:
+    def __init__(self, num_elementos=5, rango=(1, 100)):
+        self.origen = None
+        for _ in range(num_elementos):
+            self.agregar(random.randint(*rango))
+
+    def agregar(self, valor):
+        def _agregar_aux(nodo, valor_nuevo):
+            if valor_nuevo < nodo.valor:
+                if nodo.hijo_izq is None:
+                    nodo.hijo_izq = Elemento(valor_nuevo)
                 else:
-                    _insertar_recursivo(nodo.izquierda, nuevo_dato)
+                    _agregar_aux(nodo.hijo_izq, valor_nuevo)
             else:
-                if nodo.derecha is None:
-                    nodo.derecha = NodoArbol(nuevo_dato)
+                if nodo.hijo_der is None:
+                    nodo.hijo_der = Elemento(valor_nuevo)
                 else:
-                    _insertar_recursivo(nodo.derecha, nuevo_dato)
+                    _agregar_aux(nodo.hijo_der, valor_nuevo)
 
-        if self.raiz is None:
-            self.raiz = NodoArbol(dato)
+        if self.origen is None:
+            self.origen = Elemento(valor)
         else:
-            _insertar_recursivo(self.raiz, dato)
+            _agregar_aux(self.origen, valor)
 
-    def buscar(self, dato):
-        def _buscar_recursivo(nodo, dato):
-            if nodo is None or nodo.dato == dato:
+    def localizar(self, valor):
+        def _localizar_aux(nodo, valor):
+            if nodo is None or nodo.valor == valor:
                 return nodo
-            if dato < nodo.dato:
-                return _buscar_recursivo(nodo.izquierda, dato)
-            return _buscar_recursivo(nodo.derecha, dato)
+            if valor < nodo.valor:
+                return _localizar_aux(nodo.hijo_izq, valor)
+            return _localizar_aux(nodo.hijo_der, valor)
 
-        return _buscar_recursivo(self.raiz, dato)
+        return _localizar_aux(self.origen, valor)
 
-    def eliminar(self, dato):
-        def _eliminar_recursivo(nodo, dato):
+    def retirar(self, valor):
+        def _retirar_aux(nodo, valor):
             if nodo is None:
                 return None
-            if dato < nodo.dato:
-                nodo.izquierda = _eliminar_recursivo(nodo.izquierda, dato)
-            elif dato > nodo.dato:
-                nodo.derecha = _eliminar_recursivo(nodo.derecha, dato)
+            if valor < nodo.valor:
+                nodo.hijo_izq = _retirar_aux(nodo.hijo_izq, valor)
+            elif valor > nodo.valor:
+                nodo.hijo_der = _retirar_aux(nodo.hijo_der, valor)
             else:
-                if nodo.izquierda is None:
-                    return nodo.derecha
-                elif nodo.derecha is None:
-                    return nodo.izquierda
-                min_larger_node = self._encontrar_minimo(nodo.derecha)
-                nodo.dato = min_larger_node.dato
-                nodo.derecha = _eliminar_recursivo(nodo.derecha, min_larger_node.dato)
+                if nodo.hijo_izq is None:
+                    return nodo.hijo_der
+                elif nodo.hijo_der is None:
+                    return nodo.hijo_izq
+                nodo_siguiente = self._buscar_siguiente(nodo.hijo_der)
+                nodo.valor = nodo_siguiente.valor
+                nodo.hijo_der = _retirar_aux(nodo.hijo_der, nodo_siguiente.valor)
             return nodo
 
-        self.raiz = _eliminar_recursivo(self.raiz, dato)
+        self.origen = _retirar_aux(self.origen, valor)
 
-    def _encontrar_minimo(self, nodo):
+    def _buscar_siguiente(self, nodo):
         actual = nodo
-        while actual.izquierda is not None:
-            actual = actual.izquierda
+        while actual.hijo_izq is not None:
+            actual = actual.hijo_izq
         return actual
 
-    def recorrer_inOrden(self):
-        resultado = []
-        def _inOrden(nodo):
-            if nodo:
-                _inOrden(nodo.izquierda)
-                resultado.append(nodo.dato)
-                _inOrden(nodo.derecha)
-        _inOrden(self.raiz)
-        return resultado
-
-    def recorrer_preOrden(self):
-        resultado = []
-        def _preOrden(nodo):
-            if nodo:
-                resultado.append(nodo.dato)
-                _preOrden(nodo.izquierda)
-                _preOrden(nodo.derecha)
-        _preOrden(self.raiz)
-        return resultado
-
-    def recorrer_postOrden(self):
-        resultado = []
-        def _postOrden(nodo):
-            if nodo:
-                _postOrden(nodo.izquierda)
-                _postOrden(nodo.derecha)
-                resultado.append(nodo.dato)
-        _postOrden(self.raiz)
-        return resultado
-
-    def mostrar_arbol(self, nodo=None, nivel=0):
-        if self.raiz is None:
-            print("El árbol está vacío.")
+    def mostrar_estructura(self, nodo=None, profundidad=0):
+        if self.origen is None:
+            print("La estructura está vacía.")
             return
         if nodo is None:
-            nodo = self.raiz
+            nodo = self.origen
         if nodo is not None:
-            if nodo.derecha is not None:
-                self.mostrar_arbol(nodo.derecha, nivel + 1)
-            print("    " * nivel + str(nodo.dato))
-            if nodo.izquierda is not None:
-                self.mostrar_arbol(nodo.izquierda, nivel + 1)
+            if nodo.hijo_der is not None:
+                self.mostrar_estructura(nodo.hijo_der, profundidad + 1)
+            print("    " * profundidad + str(nodo.valor))
+            if nodo.hijo_izq is not None:
+                self.mostrar_estructura(nodo.hijo_izq, profundidad + 1)
+
+    def agregar_interactivo(self):
+        valor = int(input("Ingrese el valor a agregar: "))
+        self.agregar(valor)
+        print("Valor agregado.")
+
+    def retirar_interactivo(self):
+        valor = int(input("Ingrese el valor a retirar: "))
+        self.retirar(valor)
+        print("Valor retirado.")
+
+    def localizar_interactivo(self):
+        valor = int(input("Ingrese el valor a localizar: "))
+        elemento = self.localizar(valor)
+        if elemento:
+            print(f"Elemento {valor} localizado.")
+        else:
+            print(f"Elemento {valor} no encontrado.")
+
+    def mostrar_estructura_interactivo(self):
+        print("\nEstructura Arbórea:")
+        self.mostrar_estructura()
 
     def interactuar(self):
+        print("Estructura Arbórea inicial:")
+        self.mostrar_estructura()
+
+        acciones = {
+            "1": self.agregar_interactivo,
+            "2": self.retirar_interactivo,
+            "3": self.localizar_interactivo,
+            "4": self.mostrar_estructura_interactivo
+        }
+
         while True:
-            print("\nOperaciones disponibles:")
-            print("1. Insertar")
-            print("2. Eliminar")
-            print("3. Buscar")
-            print("4. Mostrar árbol")
-            print("5. Salir")
+            print("\nAcciones disponibles:")
+            print("1. Agregar")
+            print("2. Retirar")
+            print("3. Localizar")
+            print("4. Mostrar Estructura")
+            print("5. Finalizar")
 
-            eleccion = input("Elige una opción (1-5): ")
+            eleccion = input("Seleccione una acción (1-5): ")
 
-            if eleccion == "1":
-                dato = int(input("Ingresa el número a insertar: "))
-                self.insertar(dato)
-                print("Número insertado.")
-            elif eleccion == "2":
-                dato = int(input("Ingresa el número a eliminar: "))
-                self.eliminar(dato)
-                print("Número eliminado.")
-            elif eleccion == "3":
-                dato = int(input("Ingresa el número a buscar: "))
-                nodo = self.buscar(dato)
-                if nodo:
-                    print(f"Elemento {dato} encontrado.")
-                else:
-                    print(f"Elemento {dato} no encontrado.")
-            elif eleccion == "4":
-                print("\nÁrbol Binario:")
-                self.mostrar_arbol()
+            if eleccion in acciones:
+                acciones[eleccion]()
             elif eleccion == "5":
-                print("Saliendo del programa.")
+                print("Finalizando el programa.")
                 break
             else:
-                print("Opción no válida.")
-arbol = ArbolBinario()
-arbol.interactuar()
+                print("Acción no válida.")
+
+estructura = EstructuraArborea()
+estructura.interactuar()
